@@ -5,27 +5,36 @@ import pyautogui
 from pynput import mouse, keyboard
 from optparse import OptionParser
 
+
 class Stopwatch():
+
     def __init__(self):
         self.starttime = time.time()
-    def elapsed(self,reset=False):
+
+    def elapsed(self, reset=False):
         t = time.time() - self.starttime
         if reset:
             self.reset()
         return t
+
     def reset(self):
         self.starttime = time.time()
 
+
 clock = Stopwatch()
+
 
 def on_click(x, y, button, pressed):
     if not stopRecording:
         if pressed:
             if button.name == "left":
-                listbox.insert(tk.END, "pyautogui.click(x=%d, y=%d)" % (x,y))
+                listbox.insert(tk.END, "pyautogui.click(x=%d, y=%d)" % (x, y))
             else:
-                listbox.insert(tk.END, "pyautogui.click(x=%d, y=%d, button='right')" % (x,y))
+                listbox.insert(
+                    tk.END,
+                    "pyautogui.click(x=%d, y=%d, button='right')" % (x, y))
             listbox.insert(tk.END, "time.sleep(%f)" % clock.elapsed(True))
+
 
 def on_press(key):
     if not stopRecording:
@@ -48,8 +57,9 @@ def on_release(key):
 listener = mouse.Listener(on_click=on_click)
 listener.start()
 
-listener2 = keyboard.Listener(on_release=on_release,on_press=on_press)
+listener2 = keyboard.Listener(on_release=on_release, on_press=on_press)
 listener2.start()
+
 
 def recording():
     listbox.insert(tk.END, "pyautogui.moveTo(%d, %d)" % pyautogui.position())
@@ -58,14 +68,15 @@ def recording():
     else:
         listbox.insert(tk.END, "time.sleep(%f)" % clock.elapsed(True))
     if not stopRecording:
-        root.after(delay*1000, recording)
+        root.after(delay * 100, recording)
+
 
 def playing():
     global stopPlaying, entryIdx
     entry = listbox.get(entryIdx)
     if entry:
         if entryIdx > 1:
-            eval(entry)
+            eval(entry)  # Execute the command
             listbox.select_clear(0, tk.END)
             listbox.select_set(entryIdx)
             listbox.see(entryIdx)
@@ -77,6 +88,7 @@ def playing():
     if not stopPlaying:
         root.after(1, playing)
 
+
 def click_r():
     global stopRecording
     button_r["relief"] = tk.SUNKEN
@@ -86,12 +98,16 @@ def click_r():
         clock.reset()
     if options.recordMoves:
         root.after(delay, recording)
+
+
 def click_p():
     global stopPlaying
     button_p["relief"] = tk.SUNKEN
     button_r["state"] = "disabled"
     stopPlaying = False
     root.after(1, playing)
+
+
 def click_s():
     global stopRecording
     stopRecording = True
@@ -99,33 +115,59 @@ def click_s():
     button_p["state"] = "normal"
     button_r["relief"] = tk.RAISED
     button_p["relief"] = tk.RAISED
+
+
 def click_d():
     name = tkinter.filedialog.asksaveasfilename()
     if name:
-        f = open(name,"w")
+        f = open(name, "w")
         i = 0
         while True:
             entry = listbox.get(i)
             if entry:
-                f.write(entry+"\n")
+                f.write(entry + "\n")
                 i += 1
             else:
                 break
         f.close()
 
+
+def click_upload():
+    name = tkinter.filedialog.askopenfilename()
+    if name:
+        f = open(name, "r")
+        i = 0
+        # Clear the listbox
+        listbox.delete(0, tk.END)
+        while True:
+            entry = f.readline()
+            if entry:
+                listbox.insert(tk.END, entry)
+                i += 1
+            else:
+                break
+        f.close()
+
+
 usage = '''
 python3 PyAutoGuiRecorder.oy OPTIONS
 '''
 parser = OptionParser(usage)
-parser.add_option("--delay", dest="Delay", default=0.0, type="float",
-    help="Replay delay in seconds")
-parser.add_option("--recordMoves", dest="recordMoves", action="store_true",
-    help="Capture simply mouse moves")
+parser.add_option("--delay",
+                  dest="Delay",
+                  default=0.0,
+                  type="float",
+                  help="Replay delay in seconds")
+parser.add_option("--recordMoves",
+                  dest="recordMoves",
+                  action="store_true",
+                  help="Capture simply mouse moves")
 options, args = parser.parse_args()
 
 root = tk.Tk()
 title = "PyAutoGuiRecorder Version 1.0"
 root.title(title)
+root.geometry("600x400")
 delay = 1
 stopRecording = True
 stopPlaying = True
@@ -138,9 +180,7 @@ frame2.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 items = []
 list_items = tk.Variable(value=items)
-listbox = tk.Listbox(
-    frame2, listvariable=list_items
-)
+listbox = tk.Listbox(frame2, listvariable=list_items)
 listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 scrollbar_v = tk.Scrollbar(frame2, orient="vertical")
 scrollbar_v.config(command=listbox.yview)
@@ -166,4 +206,10 @@ button_s.pack(side=tk.LEFT)
 icon4 = tk.PhotoImage(file="./images/Download.png")
 button_d = tk.Button(root, text="Download", command=click_d, image=icon4)
 button_d.pack(side=tk.LEFT)
+icon5 = tk.PhotoImage(file="./images/Upload.png")
+button_upload = tk.Button(root,
+                          text="Upload",
+                          command=click_upload,
+                          image=icon5)
+button_upload.pack(side=tk.LEFT)
 root.mainloop()
