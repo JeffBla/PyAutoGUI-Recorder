@@ -149,6 +149,12 @@ def click_upload():
         f.close()
 
 
+def click_clean():
+    listbox.delete(0, tk.END)
+    listbox.insert(tk.END, "import pyautogui")
+    listbox.insert(tk.END, "import time")
+
+
 usage = '''
 python3 PyAutoGuiRecorder.oy OPTIONS
 '''
@@ -211,5 +217,8 @@ button_upload = tk.Button(root,
                           text="Upload",
                           command=click_upload,
                           image=icon5)
+button_upload.pack(side=tk.LEFT)
+icon6 = tk.PhotoImage(file="./images/Clean.png")
+button_upload = tk.Button(root, text="Clean", command=click_clean, image=icon6)
 button_upload.pack(side=tk.LEFT)
 root.mainloop()
